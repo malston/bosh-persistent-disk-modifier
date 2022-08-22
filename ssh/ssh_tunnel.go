@@ -3,7 +3,6 @@ package ssh
 import (
 	"errors"
 	"io/ioutil"
-	"log"
 	"net"
 	"os"
 	"time"
@@ -21,7 +20,7 @@ func NewTunnel(
 	tunnelRequired bool,
 ) (*SSH, error) {
 	if !tunnelRequired {
-		log.Println("ssh tunneling not required, skipping tunnel creation")
+		// log.Println("ssh tunneling not required, skipping tunnel creation")
 		return nil, nil
 	}
 

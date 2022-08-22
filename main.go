@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/malston/bosh-persistent-disk-modifier/bosh"
 	"log"
+
+	"github.com/malston/bosh-persistent-disk-modifier/bosh"
 )
 
 const (
@@ -14,6 +15,7 @@ const (
 	sshPassword    = ""
 	sshPrivateKey  = ""
 	tunnelRequired = false
+	deployment     = "cf-02614dc53e91b381e7bd"
 )
 
 func main() {
@@ -35,8 +37,9 @@ func main() {
 		DB: db,
 	}
 
-	_, err = b.GetPersistentDiskMappings()
+	err = b.UpdatePersistentDiskCIDs(deployment)
 	if err != nil {
-		return
+		log.Fatalf("%v", err)
 	}
 }
+

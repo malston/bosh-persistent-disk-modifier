@@ -32,7 +32,6 @@ func NewDatabase(
 		go func() {
 			err := sshTunnel.Start(wg)
 			if err != nil {
-				fmt.Println("failed to start ssh tunnel")
 				panic(err)
 			}
 		}()
@@ -41,13 +40,10 @@ func NewDatabase(
 	wg.Wait()
 
 	conn := fmt.Sprintf("postgres://%s@%s/bosh?sslmode=disable", user, host)
-	fmt.Printf("connecting to bosh db: %s\n", conn)
 	db, err := sqlx.Connect("postgres", conn)
 	if err != nil {
-		fmt.Println("failed to connect to bosh db")
 		return db, err
 	}
 
-	fmt.Println("connected to bosh db")
 	return db, err
 }

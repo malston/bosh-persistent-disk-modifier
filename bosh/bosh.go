@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	//UpdatePersistentDisk = `UPDATE persistent_disks SET disk_cid=? WHERE disk_cid=?`
-	GetPersistentDiskMapping  = `SELECT disk_cid, cid FROM persistent_disks INNER JOIN vms on persistent_disks.instance_id=vms.instance_id;`
+	UpdatePersistentDisk = "UPDATE persistent_disks SET disk_cid=%s WHERE disk_cid=%s\n"
+	GetPersistentDiskMapping  = `SELECT disk_cid, cid FROM persistent_disks INNER JOIN instances ON persistent_disks.instance_id=instances.id INNER JOIN deployments ON instances.deployment_id=deployments.id INNER JOIN vms ON persistent_disks.instance_id=vms.instance_id WHERE deployments.name=$1;`
 )
 
 type BOSH struct {
@@ -19,19 +19,25 @@ type diskMappingsRow struct {
 	DiskCID string `db:"disk_cid"`
 }
 
-//func (b BOSH) UpdatePersistentDiskCIDs() {
-//	return
-//}
-
-func (b BOSH) GetPersistentDiskMappings() (bool, error){
-	var diskMappings []diskMappingsRow
-	if err := b.DB.Select(&diskMappings, GetPersistentDiskMapping); err != nil {
-		return false, err
+func (b BOSH) UpdatePersistentDiskCIDs(deployment string) error {
+	diskMappings, err := b.getPersistentDiskMappings(deployment);
+	if err != nil {
+		return err
 	}
 
 	for _, m := range diskMappings {
-		fmt.Printf("vm cid: %s, disk cid: %s", m.VmCID, m.DiskCID)
+		fmt.Printf(UpdatePersistentDisk, m.VmCID+"_3", m.DiskCID)
 	}
 
-	return true, nil
+	return nil
 }
+
+func (b BOSH) getPersistentDiskMappings(deployment string) ([]diskMappingsRow, error){
+	var diskMappings []diskMappingsRow
+	if err := b.DB.Select(&diskMappings, GetPersistentDiskMapping, deployment); err != nil {
+		return diskMappings, err
+	}
+
+	return diskMappings, nil
+}
+
