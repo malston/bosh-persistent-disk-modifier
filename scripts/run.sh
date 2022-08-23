@@ -31,7 +31,7 @@ export https_proxy=$HTTPS_PROXY
 export no_proxy=$NO_PROXY
 
 EOF
-cat $__DIR/install.sh >> "$script_dir/install.sh"
+cat "$__DIR"/install.sh >> "$script_dir/install.sh"
 
 cat > "$script_dir/pdm.sh" <<EOF
 #!/bin/bash
@@ -39,8 +39,8 @@ cat > "$script_dir/pdm.sh" <<EOF
 /home/vcap/bin/pdm -n $DEPLOYMENT
 EOF
 
-if sshpass -p $VCAP_PASSWORD ssh "vcap@$BOSH_VM_IP" -q "bash -s " <  "$script_dir/install.sh" > /dev/null 2>&1; then
-    sshpass -p $VCAP_PASSWORD ssh "vcap@$BOSH_VM_IP" -q "bash -s " <  "$script_dir/pdm.sh"
+if sshpass -p "$VCAP_PASSWORD" ssh "vcap@$BOSH_VM_IP" -q "bash -s " <  "$script_dir/install.sh" > /dev/null 2>&1; then
+    sshpass -p "$VCAP_PASSWORD" ssh "vcap@$BOSH_VM_IP" -q "bash -s " <  "$script_dir/pdm.sh"
 else
     echo "failed to execute install.sh"
 fi
