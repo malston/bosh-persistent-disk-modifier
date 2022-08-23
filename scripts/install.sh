@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -eo pipefail
 
@@ -29,7 +29,7 @@ function install_pdm() {
     arch="${3}"
     bin_path="${4}"
     file="pdm.tgz"
-    trap '{ rm -f "$file" ; exit 255; }' EXIT
+    trap '{ rm -f "$file" ; exit 0; }' EXIT
     if [[ $version = "latest" ]]; then
         curl -fsSL -o $file "https://github.com/malston/bosh-persistent-disk-modifier/releases/latest/download/pdm-$os-$arch.tgz"
     elif [[ $version == v* ]]; then
@@ -37,9 +37,9 @@ function install_pdm() {
     else
         curl -fsSL -o $file "https://github.com/malston/bosh-persistent-disk-modifier/releases/download/v$version/pdm-$os-$arch.tgz"
     fi
-    tar -xvf $file
-    chmod +x pdm
-    sudo mv pdm "$bin_path/pdm"
+    mkdir -p "$bin_path"
+    tar -xvf $file -C "$bin_path"
+    chmod +x "$bin_path/pdm"
 }
 
 while [ "$1" != "" ]; do
