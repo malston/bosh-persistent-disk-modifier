@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	UpdatePersistentDisk = "UPDATE persistent_disks SET disk_cid=%s WHERE disk_cid=%s\n"
-	GetPersistentDiskMapping  = `SELECT disk_cid, cid FROM persistent_disks INNER JOIN instances ON persistent_disks.instance_id=instances.id INNER JOIN deployments ON instances.deployment_id=deployments.id INNER JOIN vms ON persistent_disks.instance_id=vms.instance_id WHERE deployments.name=$1;`
+	UpdatePersistentDisk     = "UPDATE persistent_disks SET disk_cid=%s WHERE disk_cid=%s\n"
+	GetPersistentDiskMapping = `SELECT disk_cid, cid FROM persistent_disks INNER JOIN instances ON persistent_disks.instance_id=instances.id INNER JOIN deployments ON instances.deployment_id=deployments.id INNER JOIN vms ON persistent_disks.instance_id=vms.instance_id WHERE deployments.name=$1;`
 )
 
 type BOSH struct {
@@ -20,7 +20,7 @@ type diskMappingsRow struct {
 }
 
 func (b BOSH) UpdatePersistentDiskCIDs(deployment string) error {
-	diskMappings, err := b.getPersistentDiskMappings(deployment);
+	diskMappings, err := b.getPersistentDiskMappings(deployment)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (b BOSH) UpdatePersistentDiskCIDs(deployment string) error {
 	return nil
 }
 
-func (b BOSH) getPersistentDiskMappings(deployment string) ([]diskMappingsRow, error){
+func (b BOSH) getPersistentDiskMappings(deployment string) ([]diskMappingsRow, error) {
 	var diskMappings []diskMappingsRow
 	if err := b.DB.Select(&diskMappings, GetPersistentDiskMapping, deployment); err != nil {
 		return diskMappings, err
@@ -40,4 +40,3 @@ func (b BOSH) getPersistentDiskMappings(deployment string) ([]diskMappingsRow, e
 
 	return diskMappings, nil
 }
-

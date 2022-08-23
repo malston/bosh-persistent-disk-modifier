@@ -2,32 +2,30 @@ package main
 
 import (
 	"log"
+	"os"
 
+	goflags "github.com/jessevdk/go-flags"
 	"github.com/malston/bosh-persistent-disk-modifier/bosh"
 )
 
 const (
-	host           = "127.0.0.1"
-	user           = "vcap"
-	password       = ""
-	sshHost        = "192.168.10.20"
-	sshUsername    = "jumpbox"
-	sshPassword    = ""
-	sshPrivateKey  = ""
-	tunnelRequired = false
-	deployment     = "cf-02614dc53e91b381e7bd"
+	host = "127.0.0.1"
+	user = "vcap"
 )
 
+var opts struct {
+	Deployment string `short:"n" long:"deployment" description:"A deployment name" required:"true"`
+}
+
 func main() {
+	_, err := goflags.Parse(&opts)
+	if err != nil {
+		os.Exit(1)
+	}
+
 	db, err := bosh.NewDatabase(
 		host,
 		user,
-		password,
-		sshHost,
-		sshUsername,
-		sshPassword,
-		sshPrivateKey,
-		tunnelRequired,
 	)
 	if err != nil {
 		log.Fatalf("failed to connect to bosh database: %v", err)
@@ -37,9 +35,8 @@ func main() {
 		DB: db,
 	}
 
-	err = b.UpdatePersistentDiskCIDs(deployment)
+	err = b.UpdatePersistentDiskCIDs(opts.Deployment)
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Fatalf("%v\n", err)
 	}
 }
-
