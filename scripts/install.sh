@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -eo pipefail
-
 VERSION="latest"
 OS=linux
 ARCH=amd64

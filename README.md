@@ -13,16 +13,16 @@ migration of CF or other bosh deployment.
     export DEPLOYMENT=cf-02614dc53e91b381e7bd
     ```
 
-1. If necessary, update `./scripts/install.sh` and set the http proxy variables
+1. If necessary, export http proxy variables
 
     ```sh
-    export http_proxy=http://some.proxy.local
-    export https_proxy=http://some.proxy.local
-    export no_proxy=comma-delimitted-excluded-ips-domains-from-proxy
+    export HTTP_PROXY=http://some.proxy.local
+    export HTTPS_PROXY=http://some.proxy.local
+    export NO_PROXY=comma-delimitted-excluded-ips-domains-from-proxy
     ```
 
 ## Run
 
-```sh
-./scripts/run.sh
-```
+    ```sh
+    ./scripts/run.sh
+    ```sh
