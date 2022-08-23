@@ -5,7 +5,7 @@ set -eo pipefail
 VERSION="latest"
 OS=linux
 ARCH=amd64
-BIN_PATH="/usr/local/bin"
+BIN_PATH="/home/vcap/bin"
 
 function usage() {
     echo "Usage:"
