@@ -23,6 +23,8 @@ migration of CF or other bosh deployment.
 
 ## Run
 
+1. Run binary on bosh database by connecting to the bosh vm from a jumpbox
+
     ```sh
     ./scripts/run.sh
-    ```sh
+    ```
