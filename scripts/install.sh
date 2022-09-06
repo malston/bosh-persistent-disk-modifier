@@ -1,9 +1,6 @@
-#!/bin/bash
-
 VERSION="latest"
 OS=linux
 ARCH=amd64
-BIN_PATH="/home/vcap/bin"
 
 function usage() {
     echo "Usage:"
