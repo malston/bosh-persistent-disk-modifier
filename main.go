@@ -15,6 +15,7 @@ const (
 
 var opts struct {
 	Deployment string `short:"n" long:"deployment" description:"A deployment name" required:"true"`
+	DiskID string `short:"i" long:"id" description:"The persistent disk id" required:"false" default:"3"`
 }
 
 func main() {
@@ -35,7 +36,7 @@ func main() {
 		DB: db,
 	}
 
-	err = b.UpdatePersistentDiskCIDs(opts.Deployment)
+	err = b.UpdatePersistentDiskCIDs(opts.Deployment, opts.DiskID)
 	if err != nil {
 		log.Fatalf("%v\n", err)
 	}
