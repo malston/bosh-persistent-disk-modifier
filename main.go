@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/url"
 	"os"
 
 	goflags "github.com/jessevdk/go-flags"
 	"github.com/malston/bosh-persistent-disk-modifier/bosh"
+	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/vim25"
 )
 
@@ -39,6 +41,7 @@ func main() {
 	r := &bosh.Repository{
 		DB: db,
 	}
+
 	u, err := url.Parse("https://"+opts.VCenterHostname)
 	if err != nil {
 		log.Fatalf("unable to parse url: %v", err)
@@ -46,8 +49,12 @@ func main() {
 
 	u.Path = vim25.Path
 	u.User = url.UserPassword(opts.VCenterUsername, opts.VCenterPassword)
+	c, err := govmomi.NewClient(context.Background(), u, true)
+	if err != nil {
+		log.Fatalf("failed to create govmomi client, %v\n", err)
+	}
 
-	err = r.UpdatePersistentDiskCIDs(opts.Deployment, u, true)
+	err = r.UpdatePersistentDiskCIDs(opts.Deployment, c.Client)
 	if err != nil {
 		log.Fatalf("%v\n", err)
 	}
