@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"net/url"
 	"os"
 
 	goflags "github.com/jessevdk/go-flags"
 	"github.com/malston/bosh-persistent-disk-modifier/bosh"
+	"github.com/vmware/govmomi/vim25"
 )
 
 const (
@@ -14,8 +16,10 @@ const (
 )
 
 var opts struct {
-	Deployment string `short:"n" long:"deployment" description:"A deployment name" required:"true"`
-	DiskID string `short:"i" long:"id" description:"The persistent disk id" required:"false" default:"3"`
+	VCenterHostname string `long:"vcenter" description:"The vcenter hostname" required:"true"`
+	VCenterUsername string `short:"u" long:"username" description:"The vcenter username" required:"true"`
+	VCenterPassword string `short:"p" long:"password" description:"The vcenter password" required:"true"`
+	Deployment string `short:"n" long:"deployment" description:"The bosh deployment name" required:"true"`
 }
 
 func main() {
@@ -24,7 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := bosh.NewDatabase(
+	db, err := bosh.NewDBConnection(
 		host,
 		user,
 	)
@@ -32,11 +36,18 @@ func main() {
 		log.Fatalf("failed to connect to bosh database: %v", err)
 	}
 
-	b := &bosh.BOSH{
+	r := &bosh.Repository{
 		DB: db,
 	}
+	u, err := url.Parse("https://"+opts.VCenterHostname)
+	if err != nil {
+		log.Fatalf("unable to parse url: %v", err)
+	}
 
-	err = b.UpdatePersistentDiskCIDs(opts.Deployment, opts.DiskID)
+	u.Path = vim25.Path
+	u.User = url.UserPassword(opts.VCenterUsername, opts.VCenterPassword)
+
+	err = r.UpdatePersistentDiskCIDs(opts.Deployment, u, true)
 	if err != nil {
 		log.Fatalf("%v\n", err)
 	}

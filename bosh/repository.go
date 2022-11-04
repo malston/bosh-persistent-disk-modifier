@@ -1,10 +1,13 @@
 package bosh
 
 import (
+	"context"
 	"fmt"
-	"strings"
+	"net/url"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/malston/bosh-persistent-disk-modifier/vc"
+	"github.com/vmware/govmomi"
 )
 
 const (
@@ -12,9 +15,7 @@ const (
 	GetPersistentDiskMapping = `SELECT disk_cid, cid FROM persistent_disks INNER JOIN instances ON persistent_disks.instance_id=instances.id INNER JOIN deployments ON instances.deployment_id=deployments.id INNER JOIN vms ON persistent_disks.instance_id=vms.instance_id WHERE deployments.name=$1;`
 )
 
-const DefaultDiskID = "3"
-
-type BOSH struct {
+type Repository struct {
 	DB *sqlx.DB
 }
 
@@ -23,28 +24,18 @@ type diskMappingsRow struct {
 	DiskCID string `db:"disk_cid"`
 }
 
-func parseDiskID(id string) string {
-	if id == "" {
-		return DefaultDiskID
+func (r Repository) UpdatePersistentDiskCIDs(deployment string, u *url.URL, insecure bool) error {
+	c, err := govmomi.NewClient(context.Background(), u, insecure)
+	if err != nil {
+		return fmt.Errorf("failed to create govmomi client, %w", err)
 	}
 
-	if strings.HasPrefix(id, "_") {
-		return strings.SplitAfter(id, "_")[1]
-	}
-
-	return id
-}
-
-func (b BOSH) UpdatePersistentDiskCIDs(deployment string, id string) error {
-	diskID := parseDiskID(id)
-
-	diskMappings, err := b.getPersistentDiskMappings(deployment)
+	diskMappings, err := r.getPersistentDiskMappings(deployment)
 	if err != nil {
 		return err
 	}
 
-	db := b.DB
-	tx, err := db.Begin()
+	tx, err := r.DB.Begin()
 	if err != nil {
 		return err
 	}
@@ -56,8 +47,13 @@ func (b BOSH) UpdatePersistentDiskCIDs(deployment string, id string) error {
 	}
 
 	for _, m := range diskMappings {
-		fmt.Printf("UPDATE persistent_disks SET disk_cid=%s_%s WHERE disk_cid=%s\n", m.VmCID, diskID, m.DiskCID)
-		_, err = stmt.Exec(m.VmCID+diskID, m.DiskCID)
+		err, diskName := vc.GetPersistentDiskName(context.Background(), c.Client, m.VmCID)
+		if err != nil {
+			_ = stmt.Close()
+			return err
+		}
+		fmt.Printf("UPDATE persistent_disks SET disk_cid=%s WHERE disk_cid=%s\n", diskName, m.DiskCID)
+		_, err = stmt.Exec(diskName, m.DiskCID)
 		if err != nil {
 			_ = stmt.Close()
 			return err
@@ -71,9 +67,9 @@ func (b BOSH) UpdatePersistentDiskCIDs(deployment string, id string) error {
 	return tx.Commit()
 }
 
-func (b BOSH) getPersistentDiskMappings(deployment string) ([]diskMappingsRow, error) {
+func (r Repository) getPersistentDiskMappings(deployment string) ([]diskMappingsRow, error) {
 	var diskMappings []diskMappingsRow
-	if err := b.DB.Select(&diskMappings, GetPersistentDiskMapping, deployment); err != nil {
+	if err := r.DB.Select(&diskMappings, GetPersistentDiskMapping, deployment); err != nil {
 		return diskMappings, err
 	}
 
