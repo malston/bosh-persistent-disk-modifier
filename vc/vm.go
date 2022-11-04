@@ -2,6 +2,7 @@ package vc
 
 import (
 	"context"
+	"strings"
 
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/vim25"
@@ -23,11 +24,19 @@ func GetPersistentDiskName(ctx context.Context, c *vim25.Client, vmName string) 
 			case *types.VirtualDiskFlatVer2BackingInfo:
 				disk := d.Backing.(*types.VirtualDiskFlatVer2BackingInfo)
 				if disk.DiskMode == "independent_persistent" {
-					return nil, disk.FileName
+					return nil, removePath(disk.FileName)
 				}
 			}
 		}
 	}
 
 	return nil, ""
+}
+
+func removePath(filename string) string {
+	if filename == "" {
+		return ""
+	}
+
+	return strings.Split(filename[strings.LastIndex(filename, "/")+1:], ".")[0]
 }
