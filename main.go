@@ -21,7 +21,7 @@ var opts struct {
 	VCenterHostname string `long:"vcenter" description:"The vcenter hostname" required:"true"`
 	VCenterUsername string `short:"u" long:"username" description:"The vcenter username" required:"true"`
 	VCenterPassword string `short:"p" long:"password" description:"The vcenter password" required:"true"`
-	Deployment string `short:"n" long:"deployment" description:"The bosh deployment name" required:"true"`
+	Deployment      string `short:"n" long:"deployment" description:"The bosh deployment name" required:"true"`
 }
 
 func main() {
@@ -42,7 +42,7 @@ func main() {
 		DB: db,
 	}
 
-	u, err := url.Parse("https://"+opts.VCenterHostname)
+	u, err := url.Parse("https://" + opts.VCenterHostname)
 	if err != nil {
 		log.Fatalf("unable to parse url: %v", err)
 	}
